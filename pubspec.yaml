@@ -1,9 +1,7 @@
 name: wave_test
-description: Тестовое задание для Snapix
+description: Тестовое задание для LeadIT
 
-# The following line prevents the package from being accidentally published to
-# pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -32,7 +30,6 @@ dependencies:
   http: ^0.12.2
   intl: ^0.16.1
   url_launcher: ^5.7.1
-  dio: ^3.0.10
 
 
 # For information on the generic Dart part of this file, see the
