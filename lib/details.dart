@@ -1,11 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-// Мои файлы
 import 'package:wave_test/post.dart';
-import 'package:wave_test/nyt_api.dart';
-
-// Дополнительные пакеты
 import 'package:intl/intl.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
@@ -28,13 +22,7 @@ class _PostDetailsState extends State<PostDetails> {
   Widget build(BuildContext context) => new Scaffold(
     body: new Scaffold(
       key: _scaffoldKey,
-      body: _postCardView(),
-    ),
-  );
-
-  Widget _postCardView() {
-    return
-      SafeArea(
+      body: SafeArea(
         child: SingleChildScrollView(
           child: new Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +56,7 @@ class _PostDetailsState extends State<PostDetails> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(10,10,5,5),
                 child: new Text(
-                  getFormattedTime(),
+                  getTime(),
                   textAlign: TextAlign.left,
                   style: new TextStyle(
                       color: Colors.black54,
@@ -100,10 +88,13 @@ class _PostDetailsState extends State<PostDetails> {
             ],
           ),
         ),
-      );
-  }
+      )
+    )
+  );
 
-  String getFormattedTime() {
+
+
+  String getTime() {
     var timeStamp = new DateTime.fromMillisecondsSinceEpoch(post.timeStamp);
     var formatter = new DateFormat('dd MMM, yyyy. HH:mm');
     return formatter.format(timeStamp);

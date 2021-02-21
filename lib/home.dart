@@ -1,24 +1,22 @@
 import 'package:flutter/material.dart';
-
-// Мои файлы
 import 'package:wave_test/post.dart';
-import 'package:wave_test/post_details.dart';
-import 'package:wave_test/nyt_api.dart';
+import 'package:wave_test/details.dart';
+import 'package:wave_test/api.dart';
 import 'dart:convert';
-import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
 
-class HomePage extends StatefulWidget {
-  HomePage({Key key, this.title}) : super(key: key);
 
+class Home extends StatefulWidget {
+
+  Home({Key key, this.title}) : super(key: key);
   final String title;
 
   @override
-  _MyHomePageState createState() => new _MyHomePageState();
+  _MyHomeState createState() => new _MyHomeState();
 }
 
-class _MyHomePageState extends State<HomePage> {
+class _MyHomeState extends State<Home> {
   bool _isRequestSent = false;
   bool _isRequestFailed = false;
   List<Post> postList = [];
@@ -45,21 +43,14 @@ class _MyHomePageState extends State<HomePage> {
           )
         ),
         alignment: Alignment.center,
-        child: !_isRequestSent
-        //  Request has not been sent, let's show a progress indicator
-            ? new CircularProgressIndicator()
-
-        // Request has been sent but did it fail?
-            : _isRequestFailed
-        // Yes, it has failed. Show a retry UI
-            ? _showRetryUI()
-        // No it didn't fail. Show the data
-            : new Container(
+        child: !_isRequestSent ? new CircularProgressIndicator() :
+        _isRequestFailed ? _retry() :
+        new Container(
           child: new ListView.builder(
               itemCount: postList.length,
               scrollDirection: Axis.vertical,
               itemBuilder: (BuildContext context, int index) {
-                return _getPostWidgets(index);
+                return _get(index);
               }),
         ),
       ),
@@ -70,9 +61,7 @@ class _MyHomePageState extends State<HomePage> {
     String url = "${NYT.url+NYT.apiKey}";
     try {
       http.Response response = await http.get(url);
-      // Did request succeeded?
-      if (response.statusCode == HttpStatus.ok) {
-        // We're expecting a Json object as the result
+      if (response.statusCode == 200) {
         Map decode = json.decode(response.body);
         parseResponse(decode);
       } else {
@@ -85,11 +74,14 @@ class _MyHomePageState extends State<HomePage> {
     }
   }
 
-  Widget _getPostWidgets(int index) {
+  Widget _get(int index) {
     var post = postList[index];
-    return new GestureDetector(
+    return new InkWell(
       onTap: () {
-        openDetailsUI(post);
+        Navigator.push(
+            context,
+            new MaterialPageRoute(
+                builder: (BuildContext context) => new PostDetails(post)));
       },
       child: Container(
         height: MediaQuery.of(context).size.height/4,
@@ -149,12 +141,34 @@ class _MyHomePageState extends State<HomePage> {
     );
   }
 
-
+  Widget _retry() {
+    return new Container(
+      child: new Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          new Text('Не удалось загрузить', style: new TextStyle(fontSize: 16.0),),
+          new Padding(
+            padding: new EdgeInsets.only(top: 10.0),
+            child: new InkWell(
+              onTap: (){
+                setState(() {
+                  _isRequestSent = false;
+                  _isRequestFailed = false;
+                });
+              },
+              child: new Text('Обновить', style: new TextStyle(color: Colors.white),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
+  }
 
   void parseResponse(Map response) {
     List results = response["results"];
     for (var jsonObject in results) {
-      var post = Post.getPostFrmJSONPost(jsonObject);
+      var post = Post.fromJson(jsonObject);
       postList.add(post);
       print(post);
     }
@@ -168,46 +182,8 @@ class _MyHomePageState extends State<HomePage> {
     });
   }
 
-  Widget _showRetryUI() {
-    return new Container(
-      child: new Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          new Text(
-            'Ошибка запроса',
-            style: new TextStyle(fontSize: 16.0),
-          ),
-          new Padding(
-            padding: new EdgeInsets.only(top: 10.0),
-            child: new RaisedButton(
-              onPressed: retryRequest,
-              child: new Text(
-                'Повторить',
-                style: new TextStyle(color: Colors.white),
-              ),
-              color: Theme.of(context).accentColor,
-              splashColor: Colors.deepOrangeAccent,
-            ),
-          )
-        ],
-      ),
-    );
-  }
 
-  void retryRequest() {
-    setState(() {
-      // Let's just reset the fields.
-      _isRequestSent = false;
-      _isRequestFailed = false;
-    });
-  }
 
-  openDetailsUI(Post post) {
-    Navigator.push(
-        context,
-        new MaterialPageRoute(
-            builder: (BuildContext context) => new PostDetails(post)));
-  }
 
 
 }
